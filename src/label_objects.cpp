@@ -5,22 +5,25 @@
  * Status: pre-alpha
 */
 
-#include "tof_tool/tof_tool_box.h"
+#include <ros/ros.h> //main ROS library
+#include <ros/package.h> //find ROS packages, needs roslib dependency
 
 #include "sensor_msgs/Image.h"
+#include "rostolabelimg/annotatedObjects.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
-
-TofToolBox *tofToolBox;
 
 static const int DEBUG_main = 0;
 
 
 int main(int argc, char **argv) {
-    TofToolBox tofToolBox_local;
-    tofToolBox = &tofToolBox_local;
-
     ros::init(argc, argv, "rostolabelimg_node");
     ros::NodeHandle n;
 
