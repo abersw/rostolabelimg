@@ -9,6 +9,7 @@
 #include <ros/package.h> //find ROS packages, needs roslib dependency
 
 #include "sensor_msgs/Image.h"
+#include <std_srvs/Empty.h>
 #include "rostolabelimg/annotatedObjects.h"
 
 #include <stdio.h>
@@ -21,11 +22,20 @@
 using namespace std;
 
 static const int DEBUG_main = 0;
+static const int DEBUG_getFrameName = 0;
 static const int DEBUG_frameCallback_rawData = 0;
 
+ros::NodeHandle *ptr_n;
+
+int frameID = 0;
+
 std::string getFrameName() {
-    //add code here
-    return NULL;
+    std::string currentFrameName = "frame-" + std::to_string(frameID);
+    if (DEBUG_getFrameName) {
+        cout << "current frame name is " << currentFrameName << endl;
+    }
+    frameID++;
+    return currentFrameName;
 }
 
 void frameCallback(const rostolabelimg::annotatedObjects::ConstPtr &data) {
@@ -45,11 +55,31 @@ void frameCallback(const rostolabelimg::annotatedObjects::ConstPtr &data) {
         }
     }
     std::string currentFrameName = getFrameName();
-    std::string pathLocation = "/home/tomos/ros/wheelchair/catkin_ws/"; //location of dir to save to
+    std::string pathLocation = "/home/tomos/ros/wheelchair/catkin_ws/src/wheelchair_dump/dump/rostolabelimg/img/"; //location of dir to save to
     for (int isObject = 0; isObject < totalObjectsInFrame; isObject++) {
-        std::string requestObjectName = data->name[isObject];
-        std::string annotationLocation = pathLocation + requestObjectName + ".jpg"; //append file name to path location
+        //std::string requestObjectName = data->name[isObject];
+        
+    }
+
+    std::string annotationLocation = pathLocation + currentFrameName + ".jpg"; //append file name to path location
         std::cout << annotationLocation << std::endl; //print out path location
+        ptr_n->setParam("/wheelchair_robot/image_saver_object_annotation/filename_format", annotationLocation); //set path location in parameter server
+        std::string s;
+        if (ptr_n->getParam("/wheelchair_robot/image_saver_object_annotation/filename_format", s)) { //get parameter to confirm
+            ROS_INFO("Got param: %s", s.c_str()); //print out parameter
+        }
+        else {
+            ROS_ERROR("Failed to get param 'my_param'"); //couldn't retrieve parameter
+        }
+
+    ros::ServiceClient client = ptr_n->serviceClient<std_srvs::Empty>("/wheelchair_robot/image_saver_object_annotation/save"); //call service with empty type
+    std_srvs::Empty srv;
+    if (client.call(srv))
+    {
+    ROS_INFO("successfully called service"); //service successfully called
+    }
+    else {
+    ROS_WARN("oops"); //service failed to call
     }
 
     cout << "end frame" << endl;
@@ -59,6 +89,7 @@ void frameCallback(const rostolabelimg::annotatedObjects::ConstPtr &data) {
 int main(int argc, char **argv) {
     ros::init(argc, argv, "rostolabelimg_node");
     ros::NodeHandle n;
+    ptr_n = &n;
 
     ros::Rate rate(10.0);
     //message_filters::Subscriber<sensor_msgs::Image> depth_sub(n, "zed_node/depth/depth_registered", 10);
