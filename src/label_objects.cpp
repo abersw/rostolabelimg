@@ -23,6 +23,11 @@ using namespace std;
 static const int DEBUG_main = 0;
 static const int DEBUG_frameCallback_rawData = 0;
 
+std::string getFrameName() {
+    //add code here
+    return NULL;
+}
+
 void frameCallback(const rostolabelimg::annotatedObjects::ConstPtr &data) {
     cout << "start frame" << endl;
     int totalObjectsInFrame = data->totalObjectsInFrame;
@@ -39,6 +44,7 @@ void frameCallback(const rostolabelimg::annotatedObjects::ConstPtr &data) {
             "totalObjectsInFrame " << data->totalObjectsInFrame << endl;
         }
     }
+    std::string currentFrameName = getFrameName();
     std::string pathLocation = "/home/tomos/ros/wheelchair/catkin_ws/"; //location of dir to save to
     for (int isObject = 0; isObject < totalObjectsInFrame; isObject++) {
         std::string requestObjectName = data->name[isObject];
