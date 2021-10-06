@@ -12,6 +12,15 @@
 #include <std_srvs/Empty.h>
 #include "rostolabelimg/annotatedObjects.h"
 
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
+
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +38,10 @@ ros::NodeHandle *ptr_n;
 
 int frameID = 0;
 
-std::string getFrameName() {
+std::string image_topic_name;
+std::string bagfile_name;
+
+/*std::string getFrameName() {
     std::string currentFrameName = "frame-" + std::to_string(frameID);
     if (DEBUG_getFrameName) {
         cout << "current frame name is " << currentFrameName << endl;
@@ -83,6 +95,25 @@ void frameCallback(const rostolabelimg::annotatedObjects::ConstPtr &data) {
     }
 
     cout << "end frame" << endl;
+}*/
+
+void readBag() {
+    cv::Mat cvimage;
+    rosbag::Bag bag;
+    bag.open(bagfile_name, rosbag::bagmode::Read);
+    std::vector<std::string> topics;
+    topics.push_back(std::string("/zed/zed_node/left/image_rect_color"));
+    rosbag::View view(bag, rosbag::TopicQuery(topics));
+
+    foreach(rosbag::MessageInstance const m, view) {
+        sensor_msgs::Image::ConstPtr s = m.instantiate<sensor_msgs::Image>();
+        if (s != NULL)
+            //std::cout << s->image << std::endl;
+            cvimage = cv_bridge::toCvCopy(s)->image;
+            cout << "found image" << endl;
+            cv::imshow("image", cvimage);
+            cv::waitKey(1);
+    }
 }
 
 
@@ -93,18 +124,21 @@ int main(int argc, char **argv) {
 
     ros::Rate rate(10.0);
     //message_filters::Subscriber<sensor_msgs::Image> depth_sub(n, "zed_node/depth/depth_registered", 10);
+    image_topic_name = "//zed/zed_node/left/image_rect_color";
+    bagfile_name = "/home/tomos/ros/wheelchair/catkin_ws/src/wheelchair_dump/dump/bags/env1-run1_2021-08-05-14-32-31.bag";
+    readBag();
 
-    ros::Subscriber sub_mobilenet_object = n.subscribe("/wheelchair_robot/mobilenet/labelimg", 1000, frameCallback);
+    //ros::Subscriber sub_mobilenet_object = n.subscribe("/wheelchair_robot/mobilenet/labelimg", 1000, frameCallback);
     //object_depth_pub = n.advertise<wheelchair_msgs::foundObjects>("wheelchair_robot/dacop/depth_sensing/detected_objects", 1000); //publish topic for object locations
 
-    if (ros::isShuttingDown()) {
+    /*if (ros::isShuttingDown()) {
         //do something
     }
     if (DEBUG_main) {
         cout << "spin \n";
-    }
-    ros::spin();
-    rate.sleep();
+    }*/
+    //ros::spin();
+    //rate.sleep();
 
     return 0;
 }
