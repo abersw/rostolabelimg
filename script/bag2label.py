@@ -46,6 +46,16 @@ def id_class_name(class_id, classes):
     if class_id == key:
       return value
 
+def doesPkgExist(pkgName):
+    print("check if package exists")
+    rospack = rospkg.RosPack()
+    pkgExists = 0
+    if (rospack.get_path(pkgName) == ""):
+        pkgExists = 0
+    else:
+        pkgExists = 1
+    return pkgExists
+
 def saveImage(outputDir, count, cv_img):
     cv2.imwrite(os.path.join(outputDir, "frame%06i.png" % count), cv_img)
 
@@ -64,6 +74,8 @@ def main():
 
     print("Extract images from %s on topic %s into %s" % (args.bag_file,
                                                           args.image_topic, args.output_dir))
+
+    pkgLocation = doesPkgExist("wheelchair_dump")
 
     bag = rosbag.Bag(args.bag_file, "r")
     bridge = CvBridge()
