@@ -83,6 +83,21 @@ def startFrameXML(foldername, filename, path, database, image, depth, segmented)
     frameInfo += "<segmented>" + str(segmented) + "</segmented>\n"
     print(frameInfo)
 
+def objectDetectedXML(name, xmin, ymin, xmax, ymax):
+    objectInfo = "<object>\n"
+    objectInfo += "<name>" + name + "</name>\n"
+    objectInfo += "<pose>Unspecified</pose>\n"
+    objectInfo += "<truncated>0</truncated>\n"
+    objectInfo += "<difficult>0</difficult>\n"
+    objectInfo += "<bndbox>\n"
+    objectInfo += "<xmin>" + str(xmin) + "</xmin>\n"
+    objectInfo += "<ymin>" + str(ymin) + "</xmin>\n"
+    objectInfo += "<xmax>" + str(xmax) + "</xmax>\n"
+    objectInfo += "<ymax>" + str(ymax) + "</ymax>\n"
+    objectInfo += "</bndbox>\n"
+    objectInfo += "</object>\n"
+    print(objectInfo)
+
 def main():
     """Extract a folder of images from a rosbag.
     """
@@ -133,6 +148,8 @@ def main():
                     box_y = detection[4] * image_height
                     box_width = detection[5] * image_width
                     box_height = detection[6] * image_height
+
+                    objectDetectedXML(class_name, box_x, box_y, box_width, box_height)
 
                     """
                     label = "{}: {:.2f}".format(class_name, confidence)
