@@ -69,15 +69,7 @@ def main():
     """Extract a folder of images from a rosbag.
     """
     rospy.init_node('rostolabelimg_node', anonymous=True)
-    #parser = argparse.ArgumentParser(description="Extract images from a ROS bag.")
-    #parser.add_argument("bag_file", help="Input ROS bag.")
-    #parser.add_argument("output_dir", help="Output directory.")
-    #parser.add_argument("image_topic", help="Image topic.")
 
-    #args = parser.parse_args()
-
-    #print("Extract images from %s on topic %s into %s" % (args.bag_file,
-    #                                                      args.image_topic, args.output_dir))
     topicName = rospy.get_param("/wheelchair_robot/param/rostolabelimg/image_topic")
     bagLocation = rospy.get_param("/wheelchair_robot/param/rostolabelimg/bag_location")
     imgLocation = rospy.get_param("/wheelchair_robot/param/rostolabelimg/img_location")
