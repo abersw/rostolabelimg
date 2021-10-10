@@ -92,6 +92,9 @@ def main():
         except CvBridgeError as e:
             print(e)
 
+        frameName = "frame%06i.png" % count
+        print("frame name is ", frameName)
+
         if runSaveImages == 1:
             cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_image)
             print( "Wrote image %i" % count )
@@ -121,7 +124,7 @@ def main():
                     cv2.putText(image,label ,(int(box_x), int(box_y+.02*image_height)),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 250), 2)
                     """
                     objectNoInFrame += 1
-        print("total objects in frame are " , objectNoInFrame)
+            print("total objects in frame are " , objectNoInFrame)
 
         #sleep(0.5)
 
