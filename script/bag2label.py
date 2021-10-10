@@ -91,7 +91,7 @@ def objectDetectedXML(name, xmin, ymin, xmax, ymax):
     objectInfo += "<difficult>0</difficult>\n"
     objectInfo += "<bndbox>\n"
     objectInfo += "<xmin>" + str(xmin) + "</xmin>\n"
-    objectInfo += "<ymin>" + str(ymin) + "</xmin>\n"
+    objectInfo += "<ymin>" + str(ymin) + "</ymin>\n"
     objectInfo += "<xmax>" + str(xmax) + "</xmax>\n"
     objectInfo += "<ymax>" + str(ymax) + "</ymax>\n"
     objectInfo += "</bndbox>\n"
@@ -125,14 +125,15 @@ def main():
         except CvBridgeError as e:
             print(e)
 
-        frameName = "frame%06i.png" % count
+        frameName = "frame%06i" % count
+        frameNameImg = frameName + ".png"
         print("frame name is ", frameName)
 
         if runSaveImages == 1:
-            cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_image)
+            cv2.imwrite(os.path.join(imgLocation, frameNameImg), cv_image)
             print( "Wrote image %i" % count )
 
-        startFrameXML("img", frameName, imgLocation, "Unknown", cv_image, 3, 0)
+        writeToXML = startFrameXML("img", frameNameImg, imgLocation, "Unknown", cv_image, 3, 0)
 
         if runDNN == 1:
             image = cv2.resize(cv_image, (0,0), fx=1.0, fy=1.0)
@@ -153,7 +154,7 @@ def main():
                     box_width = detection[5] * image_width
                     box_height = detection[6] * image_height
 
-                    objectDetectedXML(class_name, box_x, box_y, box_width, box_height)
+                    writeToXML += objectDetectedXML(class_name, int(box_width), int(box_height), int(box_x), int(box_y))
 
                     """
                     label = "{}: {:.2f}".format(class_name, confidence)
@@ -162,8 +163,11 @@ def main():
                     """
                     objectNoInFrame += 1
             print("total objects in frame are " , objectNoInFrame)
-        endFrameXML()
-        sleep(0.5) #slow down each frame for reading
+        writeToXML += endFrameXML()
+        XMLfile = open(xmlLocation + frameName + ".xml", "w")
+        n = XMLfile.write(writeToXML)
+        XMLfile.close()
+        #sleep(0.5) #slow down each frame for reading
 
 
         count += 1
