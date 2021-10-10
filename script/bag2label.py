@@ -66,25 +66,32 @@ def currentFrame():
 def main():
     """Extract a folder of images from a rosbag.
     """
-    parser = argparse.ArgumentParser(description="Extract images from a ROS bag.")
-    parser.add_argument("bag_file", help="Input ROS bag.")
-    parser.add_argument("output_dir", help="Output directory.")
-    parser.add_argument("image_topic", help="Image topic.")
+    rospy.init_node('rostolabelimg_node', anonymous=True)
+    #parser = argparse.ArgumentParser(description="Extract images from a ROS bag.")
+    #parser.add_argument("bag_file", help="Input ROS bag.")
+    #parser.add_argument("output_dir", help="Output directory.")
+    #parser.add_argument("image_topic", help="Image topic.")
 
-    args = parser.parse_args()
+    #args = parser.parse_args()
 
-    print("Extract images from %s on topic %s into %s" % (args.bag_file,
-                                                          args.image_topic, args.output_dir))
+    #print("Extract images from %s on topic %s into %s" % (args.bag_file,
+    #                                                      args.image_topic, args.output_dir))
+    topicName = rospy.get_param("/wheelchair_robot/param/rostolabelimg/image_topic")
+    bagLocation = rospy.get_param("/wheelchair_robot/param/rostolabelimg/bag_location")
+    imgLocation = rospy.get_param("/wheelchair_robot/param/rostolabelimg/img_location")
+    xmlLocation = rospy.get_param("/wheelchair_robot/param/rostolabelimg/xml_location")
+    confidenceThreshold = rospy.get_param("/wheelchair_robot/param/rostolabelimg/confidence_threshold")
 
     pkgLocation = doesPkgExist("wheelchair_dump")
+    print("Package Location is ", pkgLocation)
 
-    bag = rosbag.Bag(args.bag_file, "r")
+    bag = rosbag.Bag(bagLocation, "r")
     bridge = CvBridge()
     count = 0
-    for topic, msg, t in bag.read_messages(topics=[args.image_topic]):
+    for topic, msg, t in bag.read_messages(topics=[topicName]):
         cv_img = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
 
-        cv2.imwrite(os.path.join(args.output_dir, "frame%06i.png" % count), cv_img)
+        cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_img)
         print( "Wrote image %i" % count )
 
         count += 1
