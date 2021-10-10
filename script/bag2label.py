@@ -66,8 +66,22 @@ def doesPkgExist(pkgName):
 def saveImage(outputDir, count, cv_img):
     cv2.imwrite(os.path.join(outputDir, "frame%06i.png" % count), cv_img)
 
-def currentFrame():
-    print("current frame is ")
+def startFrameXML(foldername, filename, path, database, image, depth, segmented):
+    frameInfo = "<annotation>\n"
+    frameInfo += "<folder>" + foldername + "</folder>\n"
+    frameInfo += "<filename>" + filename + "</filename>\n"
+    frameInfo += "<path>" + path + filename + "</path>\n"
+    frameInfo += "<source>\n"
+    frameInfo += "<database>" + database + "</database>\n"
+    frameInfo += "</source>\n"
+    frameInfo += "<size>\n"
+    image_height, image_width, _ = image.shape
+    frameInfo += "<width>" + str(image_width) + "</width>\n"
+    frameInfo += "<height>" + str(image_height) + "</height>\n"
+    frameInfo += "<depth>" + str(depth) + "</depth>\n"
+    frameInfo += "</size>\n"
+    frameInfo += "<segmented>" + str(segmented) + "</segmented>\n"
+    print(frameInfo)
 
 def main():
     """Extract a folder of images from a rosbag.
@@ -99,6 +113,8 @@ def main():
             cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_image)
             print( "Wrote image %i" % count )
 
+        startFrameXML("img", frameName, imgLocation, "Unknown", cv_image, 3, 0)
+
         if runDNN == 1:
             image = cv2.resize(cv_image, (0,0), fx=1.0, fy=1.0)
             image_height, image_width, _ = image.shape
@@ -126,7 +142,7 @@ def main():
                     objectNoInFrame += 1
             print("total objects in frame are " , objectNoInFrame)
 
-        #sleep(0.5)
+        sleep(0.5) #slow down each frame for reading
 
 
         count += 1
