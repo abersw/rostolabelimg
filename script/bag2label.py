@@ -18,9 +18,11 @@ from std_msgs.msg import Header
 from cv_bridge import CvBridge, CvBridgeError
 from time import sleep
 
-runSaveImages = 0
+runSaveImages = 1
 runDNN = 1
 runXML = 1
+
+DEBUG_XML = 0
 
 model = cv2.dnn.readNetFromTensorflow('/home/tomos/ros/wheelchair/catkin_ws/src/mobilenet/scripts/models/frozen_inference_graph.pb',
                                         '/home/tomos/ros/wheelchair/catkin_ws/src/mobilenet/scripts/models/ssd_mobilenet_v2_coco_2018_03_29.pbtxt')
@@ -81,7 +83,9 @@ def startFrameXML(foldername, filename, path, database, image, depth, segmented)
     frameInfo += "<depth>" + str(depth) + "</depth>\n"
     frameInfo += "</size>\n"
     frameInfo += "<segmented>" + str(segmented) + "</segmented>\n"
-    print(frameInfo)
+    if DEBUG_XML:
+        print(frameInfo)
+    return frameInfo
 
 def objectDetectedXML(name, xmin, ymin, xmax, ymax):
     objectInfo = "<object>\n"
@@ -96,11 +100,15 @@ def objectDetectedXML(name, xmin, ymin, xmax, ymax):
     objectInfo += "<ymax>" + str(ymax) + "</ymax>\n"
     objectInfo += "</bndbox>\n"
     objectInfo += "</object>\n"
-    print(objectInfo)
+    if DEBUG_XML:
+        print(objectInfo)
+    return objectInfo
 
 def endFrameXML():
     frameInfo = "</annotation>"
-    print(frameInfo)
+    if DEBUG_XML:
+        print(frameInfo)
+    return frameInfo
 
 def main():
     """Extract a folder of images from a rosbag.
@@ -113,8 +121,8 @@ def main():
     xmlLocation = rospy.get_param("/wheelchair_robot/param/rostolabelimg/xml_location")
     confidenceThreshold = rospy.get_param("/wheelchair_robot/param/rostolabelimg/confidence_threshold")
 
-    pkgLocation = doesPkgExist("wheelchair_dump")
-    print("Package Location is ", pkgLocation)
+    #pkgLocation = doesPkgExist("wheelchair_dump")
+    #print("Package Location is ", pkgLocation)
 
     bag = rosbag.Bag(bagLocation, "r")
     bridge = CvBridge()
@@ -141,7 +149,6 @@ def main():
             model.setInput(cv2.dnn.blobFromImage(image, size=(300, 300), swapRB=True))
             output = model.forward()
             objectNoInFrame = 0
-            print("start frame")
 
             for detection in output[0, 0, :, :]:
                 confidence = detection[2]
