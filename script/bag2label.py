@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2016 Massachusetts Institute of Technology
-
 """Extract images from a rosbag.
 """
 
-import os
+import os, sys
 import argparse
 import array
 
 import cv2
 
+import rospy
 import rosbag
-import rospkg
+from rospkg import RosPack, ResourceNotFound
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
@@ -48,13 +47,15 @@ def id_class_name(class_id, classes):
 
 def doesPkgExist(pkgName):
     print("check if package exists")
-    rospack = rospkg.RosPack()
-    pkgExists = 0
-    if (rospack.get_path(pkgName) == ""):
-        pkgExists = 0
-    else:
-        pkgExists = 1
-    return pkgExists
+    rospack = RosPack()
+    getPkgPath = ""
+    try:
+        getPkgPath = rospack.get_path(pkgName)
+    except ResourceNotFound as err:
+        print("ERROR: Couldn't find ", err)
+        print("Shutting down program")
+        sys.exit(1)
+    return getPkgPath
 
 def saveImage(outputDir, count, cv_img):
     cv2.imwrite(os.path.join(outputDir, "frame%06i.png" % count), cv_img)
