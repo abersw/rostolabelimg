@@ -13,8 +13,10 @@ import cv2
 import rospy
 import rosbag
 from rospkg import RosPack, ResourceNotFound
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CameraInfo
+from std_msgs.msg import Header
 from cv_bridge import CvBridge, CvBridgeError
+from time import sleep
 
 model = cv2.dnn.readNetFromTensorflow('/home/tomos/ros/wheelchair/catkin_ws/src/mobilenet/scripts/models/frozen_inference_graph.pb',
                                         '/home/tomos/ros/wheelchair/catkin_ws/src/mobilenet/scripts/models/ssd_mobilenet_v2_coco_2018_03_29.pbtxt')
@@ -89,7 +91,10 @@ def main():
     bridge = CvBridge()
     count = 0
     for topic, msg, t in bag.read_messages(topics=[topicName]):
-        cv_img = bridge.imgmsg_to_cv2(msg, desired_encoding="passthrough")
+        try:
+            cv_image = bridge.imgmsg_to_cv2(msg, "bgr8")
+        except CvBridgeError as e:
+            print(e)
 
         cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_img)
         print( "Wrote image %i" % count )
