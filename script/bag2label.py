@@ -18,6 +18,10 @@ from std_msgs.msg import Header
 from cv_bridge import CvBridge, CvBridgeError
 from time import sleep
 
+runSaveImages = 0
+runDNN = 1
+runXML = 1
+
 model = cv2.dnn.readNetFromTensorflow('/home/tomos/ros/wheelchair/catkin_ws/src/mobilenet/scripts/models/frozen_inference_graph.pb',
                                         '/home/tomos/ros/wheelchair/catkin_ws/src/mobilenet/scripts/models/ssd_mobilenet_v2_coco_2018_03_29.pbtxt')
 
@@ -88,33 +92,35 @@ def main():
         except CvBridgeError as e:
             print(e)
 
-        cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_image)
-        print( "Wrote image %i" % count )
+        if runSaveImages == 1:
+            cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_image)
+            print( "Wrote image %i" % count )
 
-        image = cv2.resize(cv_image, (0,0), fx=1.0, fy=1.0)
-        image_height, image_width, _ = image.shape
-        model.setInput(cv2.dnn.blobFromImage(image, size=(300, 300), swapRB=True))
-        output = model.forward()
-        objectNoInFrame = 0
-        print("start frame")
+        if runDNN == 1:
+            image = cv2.resize(cv_image, (0,0), fx=1.0, fy=1.0)
+            image_height, image_width, _ = image.shape
+            model.setInput(cv2.dnn.blobFromImage(image, size=(300, 300), swapRB=True))
+            output = model.forward()
+            objectNoInFrame = 0
+            print("start frame")
 
-        for detection in output[0, 0, :, :]:
-            confidence = detection[2]
-            if confidence > confidenceThreshold:
-                class_id = detection[1]
-                class_name=id_class_name(class_id,classNames) #add +1 to class_id for fast-resnet
-                print(str(str(class_id) + " " + str(detection[2])  + " " + class_name))
-                box_x = detection[3] * image_width
-                box_y = detection[4] * image_height
-                box_width = detection[5] * image_width
-                box_height = detection[6] * image_height
+            for detection in output[0, 0, :, :]:
+                confidence = detection[2]
+                if confidence > confidenceThreshold:
+                    class_id = detection[1]
+                    class_name=id_class_name(class_id,classNames) #add +1 to class_id for fast-resnet
+                    print(str(str(class_id) + " " + str(detection[2])  + " " + class_name))
+                    box_x = detection[3] * image_width
+                    box_y = detection[4] * image_height
+                    box_width = detection[5] * image_width
+                    box_height = detection[6] * image_height
 
-                """
-                label = "{}: {:.2f}".format(class_name, confidence)
-                cv2.rectangle(image, (int(box_x), int(box_y)), (int(box_width), int(box_height)), (23, 230, 210), 2)
-                cv2.putText(image,label ,(int(box_x), int(box_y+.02*image_height)),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 250), 2)
-                """
-                objectNoInFrame += 1
+                    """
+                    label = "{}: {:.2f}".format(class_name, confidence)
+                    cv2.rectangle(image, (int(box_x), int(box_y)), (int(box_width), int(box_height)), (23, 230, 210), 2)
+                    cv2.putText(image,label ,(int(box_x), int(box_y+.02*image_height)),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 250), 2)
+                    """
+                    objectNoInFrame += 1
         print("total objects in frame are " , objectNoInFrame)
 
         #sleep(0.5)
