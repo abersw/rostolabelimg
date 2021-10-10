@@ -96,7 +96,7 @@ def main():
         except CvBridgeError as e:
             print(e)
 
-        cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_img)
+        cv2.imwrite(os.path.join(imgLocation, "frame%06i.png" % count), cv_image)
         print( "Wrote image %i" % count )
 
         count += 1
