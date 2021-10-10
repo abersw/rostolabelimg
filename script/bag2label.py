@@ -98,6 +98,10 @@ def objectDetectedXML(name, xmin, ymin, xmax, ymax):
     objectInfo += "</object>\n"
     print(objectInfo)
 
+def endFrameXML():
+    frameInfo = "</annotation>"
+    print(frameInfo)
+
 def main():
     """Extract a folder of images from a rosbag.
     """
@@ -158,7 +162,7 @@ def main():
                     """
                     objectNoInFrame += 1
             print("total objects in frame are " , objectNoInFrame)
-
+        endFrameXML()
         sleep(0.5) #slow down each frame for reading
 
 
