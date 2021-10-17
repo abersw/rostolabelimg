@@ -5,16 +5,12 @@
 """
 
 import os, sys
-import argparse
-import array
 
 import cv2
 
 import rospy
 import rosbag
 from rospkg import RosPack, ResourceNotFound
-from sensor_msgs.msg import Image, CameraInfo
-from std_msgs.msg import Header
 from cv_bridge import CvBridge, CvBridgeError
 from time import sleep
 
