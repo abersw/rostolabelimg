@@ -5,6 +5,7 @@
 """
 
 import os, sys
+from pathlib import Path
 
 import cv2
 
@@ -61,6 +62,13 @@ def doesPkgExist(pkgName):
         sys.exit(1)
     return getPkgPath
 
+def doesLocExist(locName):
+    p = Path(locName)
+    if (p.exists() == False):
+        print("Directory does not exist:", locName)
+        print("Shutting down program")
+        sys.exit(1)
+
 def saveImage(outputDir, count, cv_img):
     cv2.imwrite(os.path.join(outputDir, "frame%06i.png" % count), cv_img)
 
@@ -116,6 +124,9 @@ def main():
     imgLocation = rospy.get_param("/wheelchair_robot/param/rostolabelimg/img_location")
     xmlLocation = rospy.get_param("/wheelchair_robot/param/rostolabelimg/xml_location")
     confidenceThreshold = rospy.get_param("/wheelchair_robot/param/rostolabelimg/confidence_threshold")
+    doesLocExist(imgLocation)
+    doesLocExist(xmlLocation)
+    doesLocExist(bagLocation)
 
     #pkgLocation = doesPkgExist("wheelchair_dump")
     #print("Package Location is ", pkgLocation)
